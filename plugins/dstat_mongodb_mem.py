@@ -11,7 +11,7 @@ mongodb_host = os.getenv('DSTAT_MONGODB_HOST') or '127.0.0.1:27017'
 
 class dstat_plugin(dstat):
   """
-  Plugin for MongoDB commands.
+  Plugin for MongoDB.
   """
   def __init__(self):
     global pymongo
