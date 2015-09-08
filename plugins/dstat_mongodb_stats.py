@@ -50,9 +50,12 @@ class dstat_plugin(dstat):
         self.dbList.append(db.get('name'))
     self.count += 1
 
+    for name in self.vars:
+      self.set[name] = 0
+
     for db in self.dbList:
       self.db = self.m.get_database(db)
       stats = self.db.command("dbStats")
       for name in self.vars:
-        self.set[name] = long(stats.get(name)) / (1024 * 1024)
+        self.set[name] += long(stats.get(name)) / (1024 * 1024)
     self.val = self.set
