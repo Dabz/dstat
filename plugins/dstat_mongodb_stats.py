@@ -45,8 +45,8 @@ class dstat_plugin(dstat):
     self.count   = 1
 
     if self.storageEngine == 'mmapv1':
-      self.nick  = self.nick + ('fsize')
-      self.vars  = self.vars + ('fileSize')
+      self.nick  = self.nick + ('fsize',)
+      self.vars  = self.vars + ('fileSize',)
 
 
   def extract(self):
