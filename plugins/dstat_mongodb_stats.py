@@ -31,16 +31,24 @@ class dstat_plugin(dstat):
       self.dbList.append(db.get('name'))
 
     self.name    = 'mongodb stats'
-    self.nick    = ('dsize', 'isize', 'ssize')
-    self.vars    = ('dataSize', 'indexSize', 'storageSize')
-    self.type    = 'd'
+    self.nick    = ('dsize', 'isize', 'ssize', 'fsize')
+    self.vars    = ('dataSize', 'indexSize', 'storageSize', 'fileSize')
+    self.type    = 'b'
     self.width   = 5
     self.scale   = 2
-    self.lastVal = {}
+    self.count   = 1
 
 
   def extract(self):
     self.set = {}
+
+    # refresh the database list every 10 iterations
+    if (self.count % 10) == 0:
+      stats  = self.db.command("listDatabases")
+      self.dbList = []
+      for db in stats.get('databases'):
+        self.dbList.append(db.get('name'))
+    self.count += 1
 
     for db in self.dbList:
       self.db = self.m.get_database(db)
