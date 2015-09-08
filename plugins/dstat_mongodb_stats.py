@@ -30,13 +30,23 @@ class dstat_plugin(dstat):
     for db in stats.get('databases'):
       self.dbList.append(db.get('name'))
 
+    line = self.db.command("serverStatus")
+    if 'storageEngine' in line:
+      self.storageEngine = line.get('storageEngine').get('name')
+    else:
+      self.storageEngine = 'mmapv1'
+
     self.name    = 'mongodb stats'
-    self.nick    = ('dsize', 'isize', 'ssize', 'fsize')
-    self.vars    = ('dataSize', 'indexSize', 'storageSize', 'fileSize')
+    self.nick    = ('dsize', 'isize', 'ssize')
+    self.vars    = ('dataSize', 'indexSize', 'storageSize')
     self.type    = 'b'
     self.width   = 5
     self.scale   = 2
     self.count   = 1
+
+    if self.storageEngine == 'mmapv1':
+      self.nick  = self.nick + ('fsize')
+      self.vars  = self.nick + ('fileSize')
 
 
   def extract(self):
