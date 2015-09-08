@@ -54,7 +54,7 @@ class dstat_plugin(dstat):
 
     # refresh the database list every 10 iterations
     if (self.count % 10) == 0:
-      stats  = self.db.command("listDatabases")
+      stats  = self.m.admin.command("listDatabases")
       self.dbList = []
       for db in stats.get('databases'):
         self.dbList.append(db.get('name'))
