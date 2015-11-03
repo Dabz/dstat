@@ -34,14 +34,15 @@ class dstat_plugin(dstat):
     self.name    = 'mongodb mem'
     self.nick    = ('res', 'virt')
     self.vars    = ('mem.resident', 'mem.virtual')
-    self.type    = 'd'
+    self.types   = ('b', 'b')
     self.width   = 5
     self.scale   = 2
     self.lastVal = {}
 
     if self.storageEngine == 'mmapv1':
-      self.nick = self.nick + ('map', 'mapj', 'flt')
-      self.vars = self.vars + ('mem.mapped', 'mem.mappedWithJournal', 'extra_info.page_faults')
+      self.nick  = self.nick + ('map', 'mapj', 'flt')
+      self.vars  = self.vars + ('mem.mapped', 'mem.mappedWithJournal', 'extra_info.page_faults')
+      self.types = ('b', 'b', 'b', 'b', 'd')
 
 
   def extract(self):

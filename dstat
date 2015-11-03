@@ -20,6 +20,7 @@ from __future__ import generators
 try:
     import sys, os, time, sched, re, getopt, fnmatch
     import types, resource, getpass, glob, linecache
+    sys.path.append(os.path.dirname(sys.argv[0]) + '/lib/')
 except KeyboardInterrupt:
     pass
 
