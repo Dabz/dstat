@@ -1,4 +1,5 @@
 ### Author: <gianfranco@mongodb.com>
+import sys, os
 
 global mongodb_user
 mongodb_user = os.getenv('DSTAT_MONGODB_USER') or os.getenv('USER')
