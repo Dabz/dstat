@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 
 ### This program is free software; you can redistribute it and/or
 ### modify it under the terms of the GNU General Public License
@@ -116,7 +116,7 @@ class Options:
         try:
             opts, args = getopt.getopt(args, 'acdfghilmno:prstTvyC:D:I:M:N:S:V',
                 ['all', 'all-plugins', 'bits', 'bw', 'blackonwhite', 'color',
-                 'debug', 'filesystem', 'float', 'full', 'help', 'integer',
+                 'debug', 'filesystem', 'float', 'full', 'help', 'integer', 'mongodb',
                  'list', 'mods', 'modules', 'nocolor', 'noheaders', 'noupdate',
                  'output=', 'pidfile=', 'profile', 'version', 'vmstat'] + allplugins)
         except getopt.error, exc:

@@ -24,6 +24,7 @@ install:
 #	install -d -m0755 $(DESTDIR)$(datadir)/dstat/examples/
 #	install -Dp -m0755 examples/*.py $(DESTDIR)$(datadir)/dstat/examples/
 	install -Dp -m0644 docs/dstat.1 $(DESTDIR)$(mandir)/man1/dstat.1
+	pip install pymongo
 
 docs-install:
 	$(MAKE) -C docs install
