@@ -1,7 +1,7 @@
 ## Dstat MongoDB plugins
 
-- MongoDB operations counter (<strong>--mongodb-opcount</strong>), counting  queries, inserts, updates, deletes, getmores and commands.</li>
-- MongoDB data size statistics (<strong>--mongodb-stats</strong>), displaying ddata size, the index size and the actual size.</li>
+- MongoDB ops counter (<strong>--mongodb-opcount</strong>), counting  queries, inserts, updates, deletes, getmores and commands.</li>
+- MongoDB data size statistics (<strong>--mongodb-stats</strong>), displaying data size, index size and storage size.</li>
 - MongoDB connection  counter (<strong>--mongodb-conn</strong>), number of used and available connections</li>
 - MongoDB memory information (<strong>--mongodb-mem</strong>), resident and virtual memory. Journal memory and page faults are added if  MMAPV1 is used.</li>
 - MongoDB monitoring (<strong>--mongodb</strong>), gathering all previous metrics
