@@ -171,7 +171,7 @@ class Options:
             elif opt in ['-v', '--vmstat']:
                 self.plugins += [ 'proc', 'mem', 'page', 'disk', 'sys', 'cpu' ]
             elif opt in ['--mongodb']:
-                self.plugins += [ 'mongodb-opcount', 'mongodb-mem', 'mongodb-stats', 'mongodb-conn']
+                self.plugins += [ 'mongodb-opcount', 'mongodb-mem', 'mongodb-stats', 'mongodb-conn', 'mongodb-queue']
             elif opt in ['-f', '--full']:
                 self.full = True
 
