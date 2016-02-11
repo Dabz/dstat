@@ -20,6 +20,14 @@ from __future__ import generators
 try:
     import sys, os, time, sched, re, getopt, fnmatch
     import types, resource, getpass, glob, linecache
+    import platform
+    if platform.system() == 'Darwin':
+        import ctypes, ctypes.util
+        libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library("c"))
+        CTL_KERN = 1
+        KERN_BOOTTIME = 21
+        sysctl_names = {'kern.boottime' : (CTL_KERN, KERN_BOOTTIME)}
+        import psutil
 except KeyboardInterrupt:
     pass
 
@@ -715,6 +723,33 @@ class dstat_cpu_adv(dstat_cpu):
 
         if step == op.delay:
             self.set1.update(self.set2)
+
+class dstat_cpu_bsd(dstat):
+    def __init__(self):
+        self.name = 'cpu total'
+        self.type = 'p'
+        self.width = 3
+        self.scale = 34
+
+    def vars(self):
+        cpus = psutil.cpu_times()
+        ret  = ()
+        for attr in dir(cpus):
+            if attr[0] != "_" and attr not in ("count", "index"):
+                ret = ret + (attr,)
+        print ret
+        return ret
+
+
+    def extract(self):
+        cpus  = psutil.cpu_times()
+        tot = float(0)
+        for attr in self.vars:
+            val = getattr(cpus, attr)
+            tot = val + tot
+
+        for attr in self.vars:
+            self.val[attr] = getattr(cpus, attr) / tot * 100
 
 class dstat_cpu24(dstat):
     def __init__(self):
@@ -1855,6 +1890,9 @@ def set_theme():
 
 def ticks():
     "Return the number of 'ticks' since bootup"
+    if platform.system() == 'Darwin':
+        return float(sysctl_value("kern.boottime"))
+
     try:
         for line in open('/proc/uptime', 'r', 0).readlines():
             l = line.split()
@@ -1866,6 +1904,18 @@ def ticks():
             if len(l) < 2: continue
             if l[0] == 'btime':
                 return time.time() - long(l[1])
+
+def sysctl_value(name):
+    "Return sysctl value"
+    mem = ctypes.c_uint64(0)
+    de = sysctl_names[name]
+    arr = ctypes.c_int * len(de)
+    name = arr()
+    for i, v in enumerate(de):
+        name[i] = ctypes.c_int(v)
+    sz = ctypes.c_size_t(ctypes.sizeof(mem))
+    result = libc.sysctl(name, len(de), ctypes.byref(mem), ctypes.byref(sz), None, ctypes.c_size_t(0))
+    return mem.value
 
 def improve(devname):
     "Improve a device name"
@@ -2615,7 +2665,7 @@ def main():
     for plugin in op.plugins:
 
         ### Set up fallback lists
-        if plugin == 'cpu':  mods = ( 'cpu', 'cpu24' )
+        if plugin == 'cpu':  mods = ( 'cpu', 'cpu24', 'cpu-bsd' )
         elif plugin == 'disk': mods = ( 'disk', 'disk24', 'disk24-old' )
         elif plugin == 'int':  mods = ( 'int', 'int24' )
         elif plugin == 'page': mods = ( 'page', 'page24' )
