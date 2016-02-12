@@ -23,12 +23,8 @@ try:
     import platform
     sys.path.append(os.path.dirname(sys.argv[0]) + '/lib/')
     if platform.system() == 'Darwin':
-        import ctypes, ctypes.util
-        libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library("c"))
-        CTL_KERN = 1
-        KERN_BOOTTIME = 21
-        sysctl_names = {'kern.boottime' : (CTL_KERN, KERN_BOOTTIME)}
-        import psutil
+        import ctypes, ctypes.util, psutil
+        libc = ctypes.CDLL(ctypes.util.find_library("c"))
 except KeyboardInterrupt:
     pass
 
@@ -1893,8 +1889,10 @@ def set_theme():
 def ticks():
     "Return the number of 'ticks' since bootup"
     if platform.system() == 'Darwin':
-        return float(sysctl_value("kern.boottime"))
-
+        size = ctypes.c_uint(16)
+        struct = sysctl_boottime_struct(0, 0)
+        libc.sysctlbyname("kern.boottime", ctypes.byref(struct), ctypes.byref(size), None, 0)
+        return struct.sec
     try:
         for line in open('/proc/uptime', 'r', 0).readlines():
             l = line.split()
@@ -1907,17 +1905,8 @@ def ticks():
             if l[0] == 'btime':
                 return time.time() - long(l[1])
 
-def sysctl_value(name):
-    "Return sysctl value"
-    mem = ctypes.c_uint64(0)
-    de = sysctl_names[name]
-    arr = ctypes.c_int * len(de)
-    name = arr()
-    for i, v in enumerate(de):
-        name[i] = ctypes.c_int(v)
-    sz = ctypes.c_size_t(ctypes.sizeof(mem))
-    result = libc.sysctl(name, len(de), ctypes.byref(mem), ctypes.byref(sz), None, ctypes.c_size_t(0))
-    return mem.value
+class sysctl_boottime_struct (ctypes.Structure):
+      _fields_ = [ ("sec", ctypes.c_int), ("usev", ctypes.c_int) ]
 
 def improve(devname):
     "Improve a device name"
