@@ -20,10 +20,11 @@ from __future__ import generators
 try:
     import sys, os, time, sched, re, getopt, fnmatch
     import types, resource, getpass, glob, linecache
+    import ctypes, ctypes.util, platform
     import platform
     sys.path.append(os.path.dirname(sys.argv[0]) + '/lib/')
     if platform.system() == 'Darwin':
-        import ctypes, ctypes.util, psutil
+        import psutil
         libc = ctypes.CDLL(ctypes.util.find_library("c"))
 except KeyboardInterrupt:
     pass
