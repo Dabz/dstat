@@ -13,7 +13,8 @@
 ### You should have received a copy of the GNU General Public License
 ### along with this program; if not, write to the Free Software
 ### Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-### Copyright 2004-2010 Dag Wieers <dag@wieers.com>
+
+### Copyright 2004-2016 Dag Wieers <dag@wieers.com>
 
 from __future__ import generators
 
@@ -29,7 +30,7 @@ try:
 except KeyboardInterrupt:
     pass
 
-VERSION = '0.7.2svn'
+VERSION = '0.7.3'
 
 theme = { 'default': '' }
 
@@ -187,7 +188,7 @@ class Options:
                 self.plugins += plugins
             elif opt in ['--bits']:
                 self.bits = True
-            elif opt in ['--bw', '--black-on-white']:
+            elif opt in ['--bw', '--black-on-white', '--blackonwhite']:
                 self.blackonwhite = True
             elif opt in ['--color']:
                 self.color = True
@@ -281,56 +282,56 @@ class Options:
         print '''Versatile tool for generating system resource statistics
 
 Dstat options:
-  -c, --cpu              enable cpu stats
-     -C 0,3,total           include cpu0, cpu3 and total
-  -d, --disk             enable disk stats
-     -D total,hda           include hda and total
-  -g, --page             enable page stats
-  -i, --int              enable interrupt stats
-     -I 5,eth2              include int5 and interrupt used by eth2
-  -l, --load             enable load stats
-  -m, --mem              enable memory stats
-  -n, --net              enable network stats
-     -N eth1,total          include eth1 and total
-  -p, --proc             enable process stats
-  -r, --io               enable io stats (I/O requests completed)
-  -s, --swap             enable swap stats
-     -S swap1,total         include swap1 and total
-  -t, --time             enable time/date output
-  -T, --epoch            enable time counter (seconds since epoch)
-  -y, --sys              enable system stats
+  -c, --cpu                enable cpu stats
+     -C 0,3,total             include cpu0, cpu3 and total
+  -d, --disk               enable disk stats
+     -D total,hda             include hda and total
+  -g, --page               enable page stats
+  -i, --int                enable interrupt stats
+     -I 5,eth2                include int5 and interrupt used by eth2
+  -l, --load               enable load stats
+  -m, --mem                enable memory stats
+  -n, --net                enable network stats
+     -N eth1,total            include eth1 and total
+  -p, --proc               enable process stats
+  -r, --io                 enable io stats (I/O requests completed)
+  -s, --swap               enable swap stats
+     -S swap1,total           include swap1 and total
+  -t, --time               enable time/date output
+  -T, --epoch              enable time counter (seconds since epoch)
+  -y, --sys                enable system stats
 
-  --aio                  enable aio stats
-  --fs, --filesystem     enable fs stats
-  --ipc                  enable ipc stats
-  --lock                 enable lock stats
-  --raw                  enable raw stats
-  --socket               enable socket stats
-  --tcp                  enable tcp stats
-  --udp                  enable udp stats
-  --unix                 enable unix stats
-  --vm                   enable vm stats
-  --vm-adv               enable advanced vm stats
-  --zones                enable zoneinfo stats
+  --aio                    enable aio stats
+  --fs, --filesystem       enable fs stats
+  --ipc                    enable ipc stats
+  --lock                   enable lock stats
+  --raw                    enable raw stats
+  --socket                 enable socket stats
+  --tcp                    enable tcp stats
+  --udp                    enable udp stats
+  --unix                   enable unix stats
+  --vm                     enable vm stats
+  --vm-adv                 enable advanced vm stats
+  --zones                  enable zoneinfo stats
 
-  --plugin-name          enable plugins by plugin name (see manual)
-  --list                 list all available plugins
+  --list                   list all available plugins
+  --plugin                 enable external plugin by name (see --list)
 
-  -a, --all              equals -cdngy (default)
-  -f, --full             automatically expand -C, -D, -I, -N and -S lists
-  -v, --vmstat           equals -pmgdsc -D total
+  -a, --all                equals -cdngy (default)
+  -f, --full               automatically expand -C, -D, -I, -N and -S lists
+  -v, --vmstat             equals -pmgdsc -D total
 
-  --bits                 force bits for values expressed in bytes
-  --float                force float values on screen
-  --integer              force integer values on screen
+  --bits                   force bits for values expressed in bytes
+  --float                  force float values on screen
+  --integer                force integer values on screen
 
-  --bw, --blackonwhite   change colors for white background terminal
-  --color                force colors
-  --nocolor              disable colors
-  --noheaders            disable repetitive headers
-  --noupdate             disable intermediate updates
-  --output file          write CSV output to file
-  --profile              show profiling statistics when exiting dstat
+  --bw, --black-on-white   change colors for white background terminal
+  --color                  force colors
+  --nocolor                disable colors
+  --noheaders              disable repetitive headers
+  --noupdate               disable intermediate updates
+  --output file            write CSV output to file
+  --profile                show profiling statistics when exiting dstat
 
 delay is the delay in seconds between each update (default: 1)
 count is the number of updates to display before exiting (default: unlimited)
@@ -568,7 +569,7 @@ class dstat:
         def printcsv(var):
             if var != round(var):
                 return '%.3f' % var
-            return '%d' % round(var)
+            return '%d' % long(round(var))
 
         line = ''
         for i, name in enumerate(self.vars):
@@ -671,7 +672,7 @@ class dstat_cpu(dstat):
 
 class dstat_cpu_use(dstat_cpu):
     def __init__(self):
-        self.name = 'cpu usage'
+        self.name = 'per cpu usage'
         self.type = 'p'
         self.width = 3
         self.scale = 34
@@ -1352,13 +1353,17 @@ class dstat_mem(dstat):
         self.open('/proc/meminfo')
 
     def extract(self):
+        adv_extract_vars = ('MemTotal', 'Shmem', 'SReclaimable')
+        adv_val={}
         for l in self.splitlines():
             if len(l) < 2: continue
             name = l[0].split(':')[0]
-            if name in self.vars + ('MemTotal', ):
+            if name in self.vars:
                 self.val[name] = long(l[1]) * 1024.0
+            if name in adv_extract_vars:
+                adv_val[name] = long(l[1]) * 1024.0
 
-        self.val['MemUsed'] = self.val['MemTotal'] - self.val['MemFree'] - self.val['Buffers'] - self.val['Cached'] - self.val['SReclaimable'] + self.val['Shmem']
+        self.val['MemUsed'] = adv_val['MemTotal'] - self.val['MemFree'] - self.val['Buffers'] - self.val['Cached'] - adv_val['SReclaimable'] + adv_val['Shmem']
 
 class dstat_mem_adv(dstat_mem):
     """
@@ -1815,10 +1820,10 @@ ansi = {
     'clear': '\033[2J',
 #   'clearline': '\033[K',
     'clearline': '\033[2K',
-#   'save': '\033[s',
-#   'restore': '\033[u',
-    'save': '\0337',
-    'restore': '\0338',
+    'save': '\033[s',
+    'restore': '\033[u',
+    'save_all': '\0337',
+    'restore_all': '\0338',
     'linewrap': '\033[7h',
     'nolinewrap': '\033[7l',
 
@@ -2287,6 +2292,7 @@ def initterm():
     ### Unbuffered sys.stdout
 #    sys.stdout = os.fdopen(1, 'w', 0)
 
+    termsize = None, 0
     try:
         global fcntl, struct, termios
         import fcntl, struct, termios
@@ -2797,7 +2803,9 @@ def perform(update):
             if op.header and rows >= 6:
                 if oldvislist != vislist:
                     showheader = True
-                elif step == 1 and loop % (rows - 1) == 0:
+                elif not op.update and loop % (rows - 2) == 0:
+                    showheader = True
+                elif op.update and step == 1 and loop % (rows - 1) == 0:
                     showheader = True
 
             oldvislist = vislist
